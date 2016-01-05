@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'tdiary'
 require 'rack/builder'
-require 'tdiary/application/configuration'
 require 'tdiary/rack'
 
 # FIXME too dirty hack :-<
@@ -16,25 +15,46 @@ end
 
 module TDiary
 	class Application
-		class << self
-			def configure(&block)
-				instance_eval &block
-			end
+		def initialize( base_dir = nil )
+			index_path   = self.index_path
+			update_path  = self.update_path
+			assets_path  = self.assets_path
+			assets_paths = self.assets_paths
 
-			def config
-				@config ||= Configuration.new
-			end
-		end
+			base_dir ||= self.base_dir
 
-		def initialize( base_dir = '/' )
-			@app = ::Rack::Builder.app {
+			@app = ::Rack::Builder.app do
 				map base_dir do
-					# call extensions setup before the core setup (fixed #442)
-					Application.config.builder_procs.reverse.each do |builder_proc|
-						instance_eval &builder_proc
+					map '/' do
+						use TDiary::Rack::HtmlAnchor
+						use TDiary::Rack::Static, "public"
+						use TDiary::Rack::ValidRequestPath
+						map index_path do
+							run TDiary::Dispatcher.index
+						end
+					end
+
+					map update_path do
+						use TDiary::Rack::Auth
+						run TDiary::Dispatcher.update
+					end
+
+					map assets_path do
+						environment = Sprockets::Environment.new
+						assets_paths.each {|assets_path|
+							environment.append_path assets_path
+						}
+
+						if TDiary.configuration.options['tdiary.assets.precompile']
+							TDiary.logger.info('enable assets.precompile')
+							require 'tdiary/rack/assets/precompile'
+							use TDiary::Rack::Assets::Precompile, environment
+						end
+
+						run environment
 					end
 				end
-			}
+			end
 			run_plugin_startup_procs
 		end
 
@@ -45,6 +65,34 @@ module TDiary
 				body = ["#{e.class}: #{e}\n"]
 				body << e.backtrace.join("\n")
 				[500, {'Content-Type' => 'text/plain'}, body]
+			end
+		end
+
+	protected
+		def assets_paths
+			TDiary::Extensions::constants.map {|extension|
+				TDiary::Extensions::const_get( extension ).assets_path
+			}.flatten.uniq
+		end
+
+		def index_path
+			(Pathname.new('/') + URI(TDiary.configuration.index).path).to_s
+		end
+
+		def update_path
+			(Pathname.new('/') + URI(TDiary.configuration.update).path).to_s
+		end
+
+		def assets_path
+			'/assets'
+		end
+
+		def base_dir
+			base_url = TDiary.configuration.base_url
+			if base_url.empty?
+				'/'
+			else
+				URI.parse(base_url).path
 			end
 		end
 
@@ -59,56 +107,28 @@ module TDiary
 			tdiary = TDiary::TDiaryBase.new(cgi, '', conf)
 			io = conf.io_class.new(tdiary)
 
-			plugin = TDiary::Plugin.new(
-				'conf' => conf,
-				'mode' => 'startup',
-				'diaries' => tdiary.diaries,
-				'cgi' => cgi,
-				'years' => nil,
-				'cache_path' => io.cache_path,
-				'date' => Time.now,
-				'comment' => nil,
-				'last_modified' => Time.now,  # FIXME
-				'logger' => TDiary.logger,
-				# 'debug' => true
-			)
-			# binding.pry
+			begin
+				plugin = TDiary::Plugin.new(
+					'conf' => conf,
+					'mode' => 'startup',
+					'diaries' => tdiary.diaries,
+					'cgi' => cgi,
+					'years' => nil,
+					'cache_path' => io.cache_path,
+					'date' => Time.now,
+					'comment' => nil,
+					'last_modified' => Time.now,  # FIXME
+					'logger' => TDiary.logger,
+					# 'debug' => true
+				)
 
-			# run startup plugin
-			plugin.__send__(:startup_proc, self)
-		end
-	end
-
-	Application.configure do
-		config.builder do
-			map Application.config.path[:index] do
-				use TDiary::Rack::HtmlAnchor
-				use TDiary::Rack::Static, "public"
-				use TDiary::Rack::ValidRequestPath
-				run TDiary::Dispatcher.index
-			end
-
-			map Application.config.path[:update] do
-				instance_eval &Application.config.authenticate_proc
-				run TDiary::Dispatcher.update
-			end
-
-			map Application.config.path[:assets] do
-				environment = Sprockets::Environment.new
-				TDiary::Application.config.assets_paths.each {|assets_path|
-					environment.append_path assets_path
-				}
-
-				if Application.config.assets_precompile
-					require 'tdiary/rack/assets/precompile'
-					use TDiary::Rack::Assets::Precompile, environment
-				end
-
-				run environment
+				# run startup plugin
+				plugin.__send__(:startup_proc, self)
+			rescue TDiary::ForceRedirect => e
+				# 90migrate.rb raises TDiary::ForceRedirect at first startup
+				TDiary::logger.warn(e)
 			end
 		end
-
-		config.authenticate TDiary::Rack::Auth::Basic, '.htpasswd'
 	end
 end
 

@@ -1,21 +1,16 @@
 source 'https://rubygems.org'
 
-gem 'rack', '~> 1.5.0'
+gem 'rack'
 gem 'sprockets'
 gem 'hikidoc'
 gem 'fastimage'
-gem 'gemoji'
+gem 'emot'
 gem 'mail'
-
-group :coffee do
-  gem 'coffee-script'
-  gem 'therubyracer'
-end
+gem 'rake'
 
 group :development do
   gem 'pit', require: false
   gem 'racksh', require: false
-  gem 'rake'
   gem 'redcarpet'
 
   group :test do
@@ -29,7 +24,7 @@ group :development do
     gem 'sqlite3'
     gem 'jasmine'
     gem 'simplecov', require: false
-    gem 'coveralls', require: false
+    gem 'coveralls', '~> 0.7.12', require: false
   end
 end
 

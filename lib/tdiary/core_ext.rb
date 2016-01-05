@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
-require 'gemoji'
+require 'emot'
 
 module TDiary
 	module RequestExtension
+		# backword compatibility, returns NOT mobile phone always
 		def mobile_agent?
-			self.user_agent =~ %r[(DoCoMo|J-PHONE|Vodafone|MOT-|UP\.Browser|DDIPOCKET|ASTEL|PDXGW|Palmscape|Xiino|sharp pda browser|Windows CE|L-mode|WILLCOM|SoftBank|Semulator|Vemulator|J-EMULATOR|emobile|mixi-mobile-converter)]i
+			false
 		end
 
+		# backword compatibility, returns NOT smartphone always
 		def smartphone?
-			self.user_agent =~ /iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP/
+			false
 		end
 	end
 end
@@ -37,13 +39,13 @@ class String
 	end
 
 	def emojify
-		self.gsub(/:([a-zA-Z0-9_+-]+):/) do |match|
+		self.to_str.gsub(/:([a-zA-Z0-9_+-]+):/) do |match|
 			emoji_alias = $1.downcase
 			emoji_url = %Q[<img src='http://www.emoji-cheat-sheet.com/graphics/emojis/%s.png' width='20' height='20' title='%s' alt='%s' class='emoji' />]
 			if emoji_alias == 'plus1' or emoji_alias == '+1'
 				emoji_url % (['plus1']*3)
-			elsif emoji = Emoji.find_by_alias(emoji_alias)
-				emoji_url % ([emoji.name]*3)
+			elsif Emot.unicode(emoji_alias)
+				emoji_url % ([CGI.escape(emoji_alias)]*3)
 			else
 				match
 			end
