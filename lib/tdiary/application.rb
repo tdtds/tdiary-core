@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 require 'tdiary'
+require 'tdiary/extensions/core'
 require 'rack/builder'
 require 'tdiary/rack'
 
@@ -27,7 +27,7 @@ module TDiary
 				map base_dir do
 					map '/' do
 						use TDiary::Rack::HtmlAnchor
-						use TDiary::Rack::Static, "public"
+						use TDiary::Rack::Static, ["public"]
 						use TDiary::Rack::ValidRequestPath
 						map index_path do
 							run TDiary::Dispatcher.index
@@ -40,18 +40,7 @@ module TDiary
 					end
 
 					map assets_path do
-						environment = Sprockets::Environment.new
-						assets_paths.each {|assets_path|
-							environment.append_path assets_path
-						}
-
-						if TDiary.configuration.options['tdiary.assets.precompile']
-							TDiary.logger.info('enable assets.precompile')
-							require 'tdiary/rack/assets/precompile'
-							use TDiary::Rack::Assets::Precompile, environment
-						end
-
-						run environment
+						run TDiary::Rack::Static.new(nil, assets_paths)
 					end
 				end
 			end
@@ -68,13 +57,13 @@ module TDiary
 			end
 		end
 
-	protected
 		def assets_paths
 			TDiary::Extensions::constants.map {|extension|
 				TDiary::Extensions::const_get( extension ).assets_path
 			}.flatten.uniq
 		end
 
+	protected
 		def index_path
 			(Pathname.new('/') + URI(TDiary.configuration.index).path).to_s
 		end

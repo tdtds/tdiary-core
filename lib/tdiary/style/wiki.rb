@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 #
 # Wiki_style.rb: Wiki style for tDiary 2.x format. $Revision: 1.32 $
 #
@@ -71,15 +70,7 @@ module TDiary
 			private
 
 			def valid_plugin_syntax?(code)
-				lambda {
-					begin
-						$SAFE = 4
-					rescue ArgumentError
-						# $SAFE=4 was removed from Ruby 2.1.0.
-					ensure
-						eval( "BEGIN {return true}\n#{code}", nil, "(plugin)", 0 )
-					end
-				}.call
+				eval( "BEGIN {return true}\n#{code.dup}", nil, "(plugin)", 0 )
 			rescue SyntaxError
 				lambda { eval('') }.call
 				false
@@ -87,11 +78,11 @@ module TDiary
 
 			def to_html( string )
 				html = HikiDoc::to_html( string,
-					:level => 3,
-					:empty_element_suffix => '>',
-					:use_wiki_name => false,
-					:allow_bracket_inline_image => false,
-					:plugin_syntax => method(:valid_plugin_syntax?) ).strip
+					level: 3,
+					empty_element_suffix: '>',
+					use_wiki_name: false,
+					allow_bracket_inline_image: false,
+					plugin_syntax: method(:valid_plugin_syntax?) ).strip
 				html.gsub!( %r!<span class="plugin">\{\{(.+?)\}\}</span>!m ) do
 					"<%=#{CGI.unescapeHTML($1)}\n%>"
 				end

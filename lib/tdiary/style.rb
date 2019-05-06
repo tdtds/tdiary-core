@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 require 'tdiary/comment_manager'
 require 'tdiary/referer_manager'
 require 'erb'
@@ -123,7 +121,7 @@ module TDiary
 			end
 
 			def eval_rhtml( opt, path = "#{File.dirname(__FILE__)}/../.." )
-				ERB.new(File.read("#{path}/views/#{opt['prefix']}diary.rhtml").untaint).result(binding)
+				ERB.new(File.read("#{path}/views/#{opt['prefix']}diary.rhtml")).result(binding)
 			end
 
 			def to_src

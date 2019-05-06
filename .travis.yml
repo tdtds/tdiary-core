@@ -5,11 +5,14 @@ sudo: false
 services: memcache
 
 rvm:
-  - 2.0.0
-  - 2.1
-  - 2.2
-  - 2.3.0
+  - 2.4.5
+  - 2.5.4
+  - 2.6.2
   - ruby-head
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
 
 cache:
   bundler: true
@@ -21,6 +24,10 @@ bundler_args: "--without server --jobs=3 --retry=3"
 
 before_install:
   - "echo 'gemspec' > Gemfile.local"
+  - echo "gem 'phantomjs', '= 1.9.8.0'" >> Gemfile.local
+  - gem update --system
+  - gem update bundler
+  - bundle update phantomjs
 
 before_script:
   - npm install
@@ -29,7 +36,6 @@ script: if [ $TEST_MODE = "gem" ] ; then bundle exec tdiary test ; else bundle e
 
 env:
   - TEST_MODE=rack
-  - TEST_MODE=secure
   - TEST_MODE=gem
 
 notifications:

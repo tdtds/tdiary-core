@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 # Copyright (C) 2005  akira yamada
 # You can redistribute it and/or modify it under GPL2 or any later version.
 
@@ -68,12 +67,10 @@ add_conf_proc( 'spamfilter', @spamfilter_label_conf, 'security' ) do
 		  @conf['spamfilter.filter_mode'] = true
 		end
 
-		unless @conf.secure then
-			if @cgi.params['filter.debug_mode'] && @cgi.params['filter.debug_mode'][0]
-				@conf['filter.debug_mode'] = @cgi.params['filter.debug_mode'][0].to_i
-			else
-				@conf['filter.debug_mode'] = 0
-			end
+		if @cgi.params['filter.debug_mode'] && @cgi.params['filter.debug_mode'][0]
+			@conf['filter.debug_mode'] = @cgi.params['filter.debug_mode'][0].to_i
+		else
+			@conf['filter.debug_mode'] = 0
 		end
 
 		if @cgi.params['spamfilter.date_limit'] &&
@@ -110,7 +107,7 @@ add_conf_proc( 'spamfilter', @spamfilter_label_conf, 'security' ) do
 	auto_migration_spam_champuru
 
 	# initialize DNSBL list
-	@conf['spamlookup.domain.list'] ||= "bsb.spamlookup.net\nsc.surbl.org\nrbl.bulkfeeds.jp"
+	@conf['spamlookup.domain.list'] ||= "bsb.spamlookup.net\nmulti.surbl.org\nrbl.bulkfeeds.jp"
 
 	# initialize safe domain list.
 	@conf['spamlookup.safe_domain.list'] ||= "search.yahoo.co.jp\nwww.google.com\nwww.google.co.jp\nsearch.msn.co.jp"
@@ -143,11 +140,11 @@ add_conf_proc( 'dnsblfilter', @dnsblfilter_label_conf, 'security' ) do
 	end
 
 	# initialize IP based DNSBL list
-	@conf['spamlookup.ip.list'] ||= "dnsbl.spam-champuru.livedoor.com"
+	@conf['spamlookup.ip.list'] ||= "bsb.spamlookup.net"
 	auto_migration_spam_champuru
 
 	# initialize DNSBL list
-	@conf['spamlookup.domain.list'] ||= "bsb.spamlookup.net\nsc.surbl.org\nrbl.bulkfeeds.jp"
+	@conf['spamlookup.domain.list'] ||= "bsb.spamlookup.net\nmulti.surbl.org\nrbl.bulkfeeds.jp"
 
 	# initialize safe domain list.
 	@conf['spamlookup.safe_domain.list'] ||= "www.google.com\nwww.google.co.jp\nsearch.yahoo.co.jp\nwww.bing.com"
@@ -157,10 +154,12 @@ end
 
 def auto_migration_spam_champuru
 	# auto migration of spam-champuru shutdown.
-	if @conf['spamlookup.ip.list'].scan(/dnsbl\.spam-champuru\.livedoor\.com/).size > 0
+	if @conf['spamlookup.ip.list'] && @conf['spamlookup.ip.list'].scan(/dnsbl\.spam-champuru\.livedoor\.com/).size > 0
 		@conf['spamlookup.ip.list'].gsub!(/dnsbl\.spam-champuru\.livedoor\.com/, "bsb.spamlookup.net")
 	end
 end
+
+auto_migration_spam_champuru
 
 # Local Variables:
 # mode: ruby

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 =begin
 = その日の天気プラグイン / Weather-of-today plugin((-$Id: weather.rb,v 1.16 2008-03-02 09:01:45 kazuhiko Exp $-))
 Records the weather when the diary is first updated for the date and
@@ -298,7 +297,7 @@ class Weather
 			when Net::HTTPSuccess
 				res.body
 			when Net::HTTPRedirection
-				fetch( res['location'].untaint, limit - 1 )
+				fetch( res['location'], limit - 1 )
 			else
 				raise ArgumentError, res.error!
 			end

@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 # 60sf.rb - select-filters plugin
 # This file is based on 50sp.rb Revision: 1.5
 # Modified by KURODA Hiraku.
@@ -30,7 +29,7 @@ end
 
 # url of the document
 def sf_doc_url( file )
-	"http://docs.tdiary.org/#{@conf.lang}/?#{CGI::escape( file )}"
+	"https://github.com/tdiary/tdiary-docs-#{@conf.lang}/wiki/#{CGI::escape( file )}"
 end
 
 # <li> list of plugins
@@ -122,7 +121,7 @@ end
 # Finally, we can eval the selected plugins as tdiary.rb does
 if sf_option( 'selected' ) && !@sf_filters then
 	@sf_filters = []
-	sf_option( 'selected' ).untaint.split( /\n/ ).collect{ |p| File.basename( p ) }.sort.each do |filename|
+	sf_option( 'selected' ).split( /\n/ ).collect{ |p| File.basename( p ) }.sort.each do |filename|
 		@sf_path.each do |dir|
 			path = "#{dir}/#{filename}"
 			if File.readable?( path ) then

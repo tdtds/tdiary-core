@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 #
 # class Plugin
 #  plugin management class
@@ -33,7 +32,7 @@ module TDiary
 			@content_procs = {}
 			@startup_procs = []
 			@cookies = []
-			@javascripts = []
+			@javascripts = {}
 			@javascript_setting = []
 
 			params.each do |key, value|
@@ -81,31 +80,19 @@ module TDiary
 			@resource_loaded = false
 			begin
 				res_file = File::dirname( file ) + "/#{@conf.lang}/" + File::basename( file )
-				open( res_file.untaint ) do |src|
-					instance_eval( src.read.untaint, "(plugin/#{@conf.lang}/#{File::basename( res_file )})", 1 )
+				open( res_file ) do |src|
+					instance_eval( src.read, "(plugin/#{@conf.lang}/#{File::basename( res_file )})", 1 )
 				end
 				@resource_loaded = true
 			rescue IOError, Errno::ENOENT
 			end
-			File::open( file.untaint ) do |src|
-				instance_eval( src.read.untaint, "(plugin/#{File::basename( file )})", 1 )
+			File::open( file ) do |src|
+				instance_eval( src.read, "(plugin/#{File::basename( file )})", 1 )
 			end
 		end
 
-		def eval_src( src, secure )
-			self.taint
-			@conf.taint
-			@title_procs.taint
-			@body_enter_procs.taint
-			@body_leave_procs.taint
-			@section_index.taint
-			@section_enter_procs.taint
-			@comment_leave_procs.taint
-			@subtitle_procs.taint
-			@section_leave_procs.taint
-			ret = Safe::safe( secure ? 4 : 1 ) do
-				eval( src, binding, "(TDiary::Plugin#eval_src)", 1 )
-			end
+		def eval_src( src )
+			ret = eval( src, binding, "(TDiary::Plugin#eval_src)", 1 )
 			@conf.io_class.plugin_close(@storage)
 			return ret
 		end
@@ -146,9 +133,7 @@ module TDiary
 		end
 
 		def update_proc
-			@update_procs.each do |proc|
-				proc.call
-			end
+			@update_procs.each(&:call)
 			''
 		end
 
@@ -312,15 +297,11 @@ module TDiary
 		end
 
 		def add_cookie( cookie )
-			begin
-				@cookies << cookie
-			rescue SecurityError
-				raise SecurityError, "can't use cookies in plugin when secure mode"
-			end
+			@cookies << cookie
 		end
 
-		def enable_js( script )
-			@javascripts << script unless @javascripts.index( script )
+		def enable_js( script, async: false )
+			@javascripts[script] = { async: async }
 		end
 
 		def add_js_setting( var, val = 'new Object()' )
@@ -356,13 +337,10 @@ module TDiary
 			return '' unless str
 			r = str.dup
 			if @conf.options['apply_plugin'] and r.index( '<%' ) then
-				r = r.untaint if $SAFE < 3
-				Safe::safe( @conf.secure ? 4 : 1 ) do
-					begin
-						r = ERB::new( r ).result( binding )
-					rescue Exception
-						r = %Q|<p class="message">Invalid Text</p>#{r}|
-					end
+				begin
+					r = ERB::new( r ).result( binding )
+				rescue Exception
+					r = %Q|<p class="message">Invalid Text</p>#{r}|
 				end
 			end
 			r = remove_tag( r ) if remove_tag
@@ -382,7 +360,7 @@ module TDiary
 		end
 
 		def help( name )
-			%Q[<span class="help-icon"><a href="http://docs.tdiary.org/#{h @conf.lang}/?#{h name}" target="_blank"><img src="#{theme_url}/help.png" width="19" height="19" alt="Help"></a></span>]
+			%Q[<span class="help-icon"><a href="https://github.com/tdiary/tdiary-docs-#{h @conf.lang}/wiki/#{h name}" target="_blank"><img src="#{theme_url}/help.png" width="19" height="19" alt="Help"></a></span>]
 		end
 
 		def method_missing( *m )

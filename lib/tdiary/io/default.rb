@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 #
 # defaultio.rb: tDiary IO class for tDiary 2.x - 4.x format.
 #
@@ -7,6 +6,7 @@
 #
 require 'fileutils'
 require 'tdiary/io/base'
+require 'tdiary/comment'
 
 module TDiary
 	TDIARY_MAGIC_MAJOR = 'TDIARY2'
@@ -83,7 +83,7 @@ module TDiary
 						fh.read.split( /\r?\n\.\r?\n/ ).each do |l|
 							headers, body = Default.parse_tdiary( l )
 							next unless body
-							body.each do |r|
+							body.lines.each do |r|
 								count, ref = r.chomp.split( / /, 2 )
 								next unless ref
 								diaries[headers['Date']].add_referer( ref.chomp, count.to_i )
@@ -92,7 +92,7 @@ module TDiary
 
 						# convert to referer plugin format
 						diaries.each do |date,diary|
-							fname = file.sub( /\.tdr$/, "#{date[6,2]}.tdr".untaint )
+							fname = file.sub( /\.tdr$/, "#{date[6,2]}.tdr" )
 							File::open( fname, File::WRONLY | File::CREAT ) do |fhr|
 								fhr.flock( File::LOCK_EX )
 								fhr.rewind
@@ -149,12 +149,12 @@ module TDiary
 					conf.data_path += '/' if /\/$/ !~ conf.data_path
 					raise TDiaryError, 'Do not set @data_path as same as tDiary system directory.' if conf.data_path == "#{TDiary::PATH}/"
 
-					File::open( "#{conf.data_path.untaint}tdiary.conf" ){|f| f.read }
+					File::open( "#{conf.data_path}tdiary.conf" ){|f| f.read }
 				rescue IOError, Errno::ENOENT
 				end
 
 				def save_cgi_conf(conf, result)
-					File::open( "#{conf.data_path.untaint}tdiary.conf", 'w' ) {|o| o.print result }
+					File::open( "#{conf.data_path}tdiary.conf", 'w' ) {|o| o.print result }
 				rescue IOError, Errno::ENOENT
 				end
 			end
@@ -220,13 +220,10 @@ module TDiary
 
 			def calendar
 				calendar = {}
-				Dir["#{@data_path}????"].sort.each do |dir|
-					next unless %r[/\d{4}$] =~ dir
-					Dir["#{dir.untaint}/??????.td2"].sort.each do |file|
-						year, month = file.scan( %r[/(\d{4})(\d\d)\.td2$] )[0]
-						next unless year
-						calendar[year] = [] unless calendar[year]
-						calendar[year] << month
+				Dir["#{@data_path}????/??????.td2"].sort.each do |file|
+					if file =~ /(\d{4})(\d{2})\.td2$/
+						calendar[$1] = [] unless calendar[$1]
+						calendar[$1] << $2
 					end
 				end
 				calendar

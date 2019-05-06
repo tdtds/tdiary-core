@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # recent_list: 最近書いた日記のタイトル，サブタイトルを表示する
 #   パラメタ(カッコ内は未指定時の値):
@@ -16,6 +15,8 @@
 # Copyright (c) 2001,2002 Junichiro KITA <kita@kitaj.no-ip.com>
 # Distributed under the GPL2 or any later version.
 #
+require 'tdiary/diary_container'
+
 module ::TDiary
 	class TDiaryMonthWithoutFilter < TDiaryMonth
 		def referer_filter(referer); end

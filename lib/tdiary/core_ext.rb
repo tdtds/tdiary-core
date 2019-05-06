@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
-
 require 'emot'
 
 module TDiary
 	module RequestExtension
-		# backword compatibility, returns NOT mobile phone always
+		# backward compatibility, returns NOT mobile phone always
 		def mobile_agent?
 			false
 		end
 
-		# backword compatibility, returns NOT smartphone always
+		# backward compatibility, returns NOT smartphone always
 		def smartphone?
 			false
 		end
@@ -41,7 +39,7 @@ class String
 	def emojify
 		self.to_str.gsub(/:([a-zA-Z0-9_+-]+):/) do |match|
 			emoji_alias = $1.downcase
-			emoji_url = %Q[<img src='http://www.emoji-cheat-sheet.com/graphics/emojis/%s.png' width='20' height='20' title='%s' alt='%s' class='emoji' />]
+			emoji_url = %Q[<img src='//www.webpagefx.com/tools/emoji-cheat-sheet/graphics/emojis/%s.png' width='20' height='20' title='%s' alt='%s' class='emoji' />]
 			if emoji_alias == 'plus1' or emoji_alias == '+1'
 				emoji_url % (['plus1']*3)
 			elsif Emot.unicode(emoji_alias)
@@ -65,6 +63,7 @@ class CGI
 	end
 
 	def https?
+		return true if env_table['HTTP_X_FORWARDED_PROTO'] == 'https'
 		return false if env_table['HTTPS'].nil? or /off/i =~ env_table['HTTPS'] or env_table['HTTPS'] == ''
 		true
 	end
@@ -106,30 +105,6 @@ class CGI
 end
 
 class RackCGI < CGI; end
-
-=begin
-== Safe module
-=end
-module Safe
-	def safe( level = 4 )
-		result = nil
-		if $SAFE < level then
-			Proc.new {
-				begin
-					$SAFE = level
-				rescue ArgumentError
-					# $SAFE=4 was removed from Ruby 2.1.0.
-				ensure
-					result = yield
-				end
-			}.call
-		else
-			result = yield
-		end
-		result
-	end
-	module_function :safe
-end
 
 # Local Variables:
 # mode: ruby

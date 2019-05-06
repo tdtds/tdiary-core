@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # a.rb
 #
 # Create anchor easily.
@@ -148,7 +147,6 @@ def a(key, option_or_name = nil, name = nil, charset = nil)
 
 	if @options["a.tlink"]
 		if defined?(tlink)
-			url.untaint
  			result = tlink(url, value)
 		else
 			result = "tlink is not available."

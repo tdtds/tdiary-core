@@ -1,4 +1,3 @@
-# coding: utf-8
 require 'thor'
 require 'tdiary/version'
 require 'bundler'
@@ -60,7 +59,7 @@ module TDiary
 		def assets_copy
 			require 'tdiary'
 			assets_path = File.join(TDiary.server_root, 'public/assets')
-			TDiary::Application.config.assets_paths.each do |path|
+			TDiary::Application.new.assets_paths.each do |path|
 				Dir.glob(File.join(path, '*')).each do |entity|
 					if File.directory?(entity)
 						directory entity, File.join(assets_path, File.basename(entity))
@@ -104,11 +103,11 @@ module TDiary
 
 			if options[:cgi]
 				opts = {
-					:daemon => ENV['DAEMON'],
-					:bind   => options[:bind],
-					:port   => options[:port],
-					:logger => $stderr,
-					:access_log => options[:log] ? File.open(options[:log], 'a') : $stderr
+					daemon: ENV['DAEMON'],
+					bind: options[:bind],
+					port: options[:port],
+					logger: $stderr,
+					access_log: options[:log] ? File.open(options[:log], 'a') : $stderr
 				}
 				TDiary::Server.run( opts )
 			elsif
@@ -117,12 +116,12 @@ module TDiary
 				require 'webrick'
 				ARGV.shift
 				opts = {
-					:environment => ENV['RACK_ENV'] || "development",
-					:daemonize   => false,
-					:Host        => options[:bind],
-					:Port        => options[:port],
-					:pid         => File.expand_path("tdiary.pid"),
-					:config      => File.expand_path("config.ru")
+					environment: ENV['RACK_ENV'] || "development",
+					daemonize: false,
+					Host: options[:bind],
+					Port: options[:port],
+					pid: File.expand_path("tdiary.pid"),
+					config: File.expand_path("config.ru")
 				}
 				if options[:log]
 					opts[:AccessLog] = [[File.open(options[:log], 'a'), WEBrick::AccessLog::CLF]]
@@ -149,7 +148,7 @@ module TDiary
 			if password != password2
 				raise StandardError, 'password verification error'
 			end
-			htpasswd = WEBrick::HTTPAuth::Htpasswd.new('.htpasswd')
+			htpasswd = WEBrick::HTTPAuth::Htpasswd.new(ENV['HTPASSWD'] || '.htpasswd')
 			htpasswd.set_passwd(nil, username, password)
 			htpasswd.flush
 		end

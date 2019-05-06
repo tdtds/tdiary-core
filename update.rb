@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# -*- coding: utf-8; -*-
+# -*- coding: ascii-8bit; -*-
 #
 # update.rb
 #
@@ -14,7 +14,7 @@ begin
 	else
 		org_path = File::dirname( __FILE__ )
 	end
-	$:.unshift( (org_path + '/lib').untaint ) unless $:.include?( org_path + '/lib' )
+	$:.unshift( (org_path + '/lib') ) unless $:.include?( org_path + '/lib' )
 	require 'tdiary'
 
 	encoding_error = {}

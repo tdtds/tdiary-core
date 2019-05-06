@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 #!/usr/bin/env ruby
 #
 # migrate.rb $Revision: 1.2 $
@@ -18,7 +17,7 @@ begin
 	else
 		org_path = File::dirname( __FILE__ )
 	end
-	$:.unshift( org_path.untaint )
+	$:.unshift( org_path )
 	require 'tdiary'
 
 	class TDiary::MigrateConfig < TDiary::Config

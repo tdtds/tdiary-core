@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 # 50sp.rb - select-plugins plugin
 
 SP_PREFIX = 'sp'
@@ -33,7 +32,7 @@ end
 
 # url of the document
 def sp_doc_url( file )
-	"http://docs.tdiary.org/#{@conf.lang}/?#{CGI::escape( file )}"
+	"https://github.com/tdiary/tdiary-docs-#{@conf.lang}/wiki/#{CGI::escape( file )}"
 end
 
 # <li> list of plugins
@@ -124,7 +123,7 @@ end
 
 # Finally, we can eval the selected plugins as tdiary.rb does
 if sp_option( 'selected' ) then
-	sp_option( 'selected' ).untaint.split( /\n/ ).collect{ |p| File.basename( p ) }.sort.each do |filename|
+	sp_option( 'selected' ).split( /\n/ ).collect{ |p| File.basename( p ) }.sort.each do |filename|
 		@sp_path.each do |dir|
 			path = "#{dir}/#{filename}"
 			if File.readable?( path ) then

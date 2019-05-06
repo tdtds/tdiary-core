@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 module TDiary
 	#
 	# class TDiaryBase
@@ -32,7 +31,7 @@ module TDiary
 				if e.class == ForceRedirect
 					raise
 				else
-					body = File.read("#{File.dirname(__FILE__)}/../../views/plugin_error.rhtml").untaint
+					body = File.read("#{File.dirname(__FILE__)}/../../views/plugin_error.rhtml")
 					r = ERB.new(body).result(binding)
 				end
 			end
@@ -63,7 +62,7 @@ module TDiary
 				@io.store_cache( r, prefix ) unless @diaries.empty?
 			end
 
-			r = @plugin.eval_src( r.untaint, @conf.secure ) if @plugin
+			r = @plugin.eval_src( r ) if @plugin
 
 			@cookies += @plugin.cookies
 
@@ -124,7 +123,7 @@ module TDiary
 			end.join
 
 			begin
-				r = ERB.new(rhtml.untaint).result(binding)
+				r = ERB.new(rhtml).result(binding)
 			rescue ::Encoding::CompatibilityError
 				# migration error on ruby 1.9 only 1st time, reload.
 				raise ForceRedirect.new(base_url)

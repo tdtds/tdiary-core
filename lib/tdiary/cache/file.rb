@@ -1,5 +1,3 @@
-# -*- coding: utf-8; -*-
-
 module TDiary
 	module Cache
 		def restore_cache( prefix )
@@ -30,7 +28,7 @@ module TDiary
 		end
 
 		def delete_data(path)
-			File.delete(path.untaint)
+			File.delete(path)
 		end
 
 		def restore_parser_cache(date, key = nil)

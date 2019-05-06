@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 module TDiary
 	class Dispatcher
 		class UpdateMain
@@ -21,7 +20,7 @@ module TDiary
 					head = {}; body = ''
 					body = tdiary.eval_rhtml
 					head = {
-						'Content-Type' => 'text/html',
+						'Content-Type' => 'text/html; charset=UTF-8',
 						'charset' => conf.encoding,
 						'Content-Length' => body.bytesize.to_s,
 						'Vary' => 'User-Agent',

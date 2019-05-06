@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 #
 # en/00default.rb: English resources of 00default.rb.
 #
@@ -40,7 +39,7 @@ end
 # link to HOWTO write diary
 #
 def style_howto
-	%Q|/<a href="http://docs.tdiary.org/en/?#{h @conf.style}Style">How to write</a>|
+	%Q|/<a href="https://github.com/tdiary/tdiary-docs-en/wiki#{h @conf.style}Style">How to write</a>|
 end
 
 #

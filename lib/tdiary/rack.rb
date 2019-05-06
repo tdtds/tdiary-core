@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 module TDiary
 	module Rack
 		autoload :HtmlAnchor,       'tdiary/rack/html_anchor'
@@ -7,10 +5,6 @@ module TDiary
 		autoload :Session,          'tdiary/rack/session'
 		autoload :Static,           'tdiary/rack/static'
 		autoload :Auth,             'tdiary/rack/auth'
-
-		module Assets
-			autoload :Precompile,    'tdiary/rack/assets/precompile'
-		end
 	end
 end
 

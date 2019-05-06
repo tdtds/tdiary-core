@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 module TDiary
 	class Dispatcher
 		class IndexMain
@@ -22,7 +21,7 @@ module TDiary
 
 					begin
 						head = {
-							'Content-Type' => 'text/html',
+							'Content-Type' => 'text/html; charset=UTF-8',
 							'Vary' => 'User-Agent'
 						}
 						head['status'] = status if status

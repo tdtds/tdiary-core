@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # class Configuration
 #  configuration class
@@ -16,11 +15,8 @@ module TDiary
 		end
 
 		def save
-			result = ERB.new(File.read("#{File.dirname(__FILE__)}/../../views/tdiary.rconf").untaint).result(binding)
-			result.untaint unless @secure
-			Safe::safe( @secure ? 4 : 1 ) do
-				eval( result, binding, "(TDiary::Configuration#save)", 1 )
-			end
+			result = ERB.new(File.read("#{File.dirname(__FILE__)}/../../views/tdiary.rconf")).result(binding)
+			eval( result, binding, "(TDiary::Configuration#save)", 1 )
 			@io_class.save_cgi_conf(self, result)
 		end
 
@@ -40,23 +36,23 @@ module TDiary
 			@options2.delete( key )
 		end
 
-		# backword compatibility, returns NOT mobile phone always
+		# backward compatibility, returns NOT mobile phone always
 		def mobile_agent?
 			false
 		end
 
-		# backword compatibility, returns NOT smartphone always
+		# backward compatibility, returns NOT smartphone always
 		def smartphone?
 			false
 		end
 		alias iphone? smartphone?
 
-		# backword compatibility, you can use bot? or @conf.bot =~ @cgi.user_agent
+		# backward compatibility, you can use bot? or @conf.bot =~ @cgi.user_agent
 		def bot?
 			@bot =~ @request.user_agent
 		end
 
-		# backword compatibility, you can use TDiary::ViewHelper#base_url
+		# backward compatibility, you can use TDiary::ViewHelper#base_url
 		def base_url
 			if @options['base_url'] && @options['base_url'].length > 0
 				@options['base_url']
@@ -114,38 +110,34 @@ module TDiary
 			end
 
 			cgi_conf = @io_class.load_cgi_conf(self)
-			cgi_conf.untaint unless @secure
 
-			b = binding.taint
+			b = binding
 			eval( def_vars1, b )
-			Safe::safe( @secure ? 4 : 1 ) do
-				begin
-					eval( cgi_conf, b, "(TDiary::Configuration#load_cgi_conf)", 1 )
-				rescue SyntaxError
-					enc = case @lang
-							when 'en'
-								'UTF-8'
-							else
-								'EUC-JP'
-							end
-					cgi_conf.force_encoding( enc )
-					retry
-				end
+			begin
+				eval( cgi_conf, b, "(TDiary::Configuration#load_cgi_conf)", 1 )
+			rescue SyntaxError
+				enc = case @lang
+						when 'en'
+							'UTF-8'
+						else
+							'EUC-JP'
+						end
+				cgi_conf.force_encoding( enc )
+				retry
 			end if cgi_conf
 			eval( def_vars2, b )
 		end
 
 		# loading tdiary.conf in current directory
 		def configure_attrs
-			@secure = true unless @secure
 			@options = {}
 
-			eval( File::open( 'tdiary.conf' ) {|f| f.read }.untaint, nil, "(tdiary.conf)", 1 )
+			eval( File::open( 'tdiary.conf' ) {|f| f.read }, nil, "(tdiary.conf)", 1 )
 
 			# language setup
 			@lang = 'ja' unless @lang
 			begin
-				instance_eval( File::open( "#{TDiary::PATH}/tdiary/lang/#{@lang}.rb" ){|f| f.read }.untaint, "(tdiary/lang/#{@lang}.rb)", 1 )
+				instance_eval( File::open( "#{TDiary::PATH}/tdiary/lang/#{@lang}.rb" ){|f| f.read }, "(tdiary/lang/#{@lang}.rb)", 1 )
 			rescue Errno::ENOENT
 				@lang = 'ja'
 				retry
@@ -173,6 +165,7 @@ module TDiary
 			@show_nyear = false unless @show_nyear
 
 			@theme = 'default' if not @theme and not @css
+			@theme = "local/#{@theme}" unless @theme.index('/')
 			@css = '' unless @css
 
 			@show_comment = true unless defined?( @show_comment )
@@ -196,9 +189,8 @@ module TDiary
 			if @options2 then
 				@options.update( @options2 )
 			else
-				@options2 = {}.taint
+				@options2 = {}
 			end
-			@options.taint
 
 			# for 1.4 compatibility
 			@section_anchor = @paragraph_anchor unless @section_anchor
@@ -221,7 +213,7 @@ module TDiary
 			else
 				require 'logger'
 				log_path = (@log_path || "#{@data_path}/log")
-				FileUtils.mkdir_p(log_path.untaint)
+				FileUtils.mkdir_p(log_path)
 				TDiary.logger = Logger.new(File.join(log_path, "debug.log"), 'daily')
 				TDiary.logger.level = Logger.const_get(@log_level || 'DEBUG')
 			end
@@ -233,7 +225,7 @@ module TDiary
 		end
 	end
 
-	# backword compatibility
+	# backward compatibility
 	Config = Configuration
 end
 

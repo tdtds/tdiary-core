@@ -1,4 +1,3 @@
-# -*- coding: utf-8; -*-
 require 'stringio'
 
 module TDiary
@@ -8,8 +7,8 @@ module TDiary
 		autoload :UpdateMain, 'tdiary/dispatcher/update_main'
 
 		TARGET = {
-			:index => IndexMain,
-			:update => UpdateMain
+			index: IndexMain,
+			update: UpdateMain
 		}
 
 		def initialize( target )
